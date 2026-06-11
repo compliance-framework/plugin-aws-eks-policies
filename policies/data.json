@@ -1,1 +1,25 @@
-{}
+{
+  "approved_cluster_statuses": [
+    "ACTIVE"
+  ],
+  "required_control_plane_log_types": [
+    "audit",
+    "authenticator"
+  ],
+  "allow_public_endpoint": true,
+  "require_private_endpoint_access": false,
+  "broad_public_endpoint_cidrs": [
+    "0.0.0.0/0",
+    "::/0"
+  ],
+  "allowed_public_endpoint_cidrs": [],
+  "require_secrets_encryption": true,
+  "minimum_version_with_default_secrets_encryption": "1.28",
+  "require_customer_managed_kms_key": false,
+  "allowed_authentication_modes": [
+    "API",
+    "API_AND_CONFIG_MAP"
+  ],
+  "allow_bootstrap_creator_admin": false,
+  "required_addons": []
+}
