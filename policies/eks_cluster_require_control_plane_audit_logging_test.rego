@@ -13,6 +13,10 @@ test_no_violation_when_required_logs_overridden if {
 		with data.required_control_plane_log_types as ["api"]
 }
 
+test_two_violations_when_all_required_log_types_absent if {
+	count(violation) == 2 with input as {"cluster_context": {"current": {"enabled_control_plane_log_types": []}}}
+}
+
 test_skip_when_required_logs_not_configured if {
 	skip_reason == "required EKS control plane log types are not configured" with data.required_control_plane_log_types as []
 }

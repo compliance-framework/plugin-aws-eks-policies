@@ -27,7 +27,22 @@ Node group and add-on resource policies live in separate bundles.
 
 ## Policy data
 
-Default baselines live in `policies/data.json` and can be overridden by agent-supplied policy data. Current settings cover approved cluster status, required log types, endpoint access expectations, EKS default secrets encryption version handling, customer-managed KMS requirements, allowed authentication modes, bootstrap creator admin permission allowance, and required managed add-ons.
+Default baselines live in `policies/data.json` and can be overridden by agent-supplied policy data.
+
+| Key | Type | Default | Policies that read it |
+|-----|------|---------|----------------------|
+| `approved_cluster_statuses` | `array<string>` | `["ACTIVE"]` | `eks_cluster_require_active_health` |
+| `required_control_plane_log_types` | `array<string>` | `["audit", "authenticator"]` | `eks_cluster_require_control_plane_audit_logging` |
+| `allow_public_endpoint` | `boolean` | `true` | `eks_cluster_restrict_public_endpoint_cidrs` |
+| `require_private_endpoint_access` | `boolean` | `false` | `eks_cluster_restrict_public_endpoint_cidrs` |
+| `broad_public_endpoint_cidrs` | `array<string>` | `["0.0.0.0/0", "::/0"]` | `eks_cluster_restrict_public_endpoint_cidrs` |
+| `allowed_public_endpoint_cidrs` | `array<string>` | `[]` | `eks_cluster_restrict_public_endpoint_cidrs` |
+| `require_secrets_encryption` | `boolean` | `true` | `eks_cluster_require_secrets_encryption` |
+| `minimum_version_with_default_secrets_encryption` | `string` | `"1.28"` | `eks_cluster_require_secrets_encryption` |
+| `require_customer_managed_kms_key` | `boolean` | `false` | `eks_cluster_require_secrets_encryption` |
+| `allowed_authentication_modes` | `array<string>` | `["API", "API_AND_CONFIG_MAP"]` | `eks_cluster_require_access_entries_mode` |
+| `allow_bootstrap_creator_admin` | `boolean` | `false` | `eks_cluster_restrict_bootstrap_creator_admin` |
+| `required_addons` | `array<string>` | `[]` | `eks_cluster_require_managed_addons` |
 
 ## Testing
 

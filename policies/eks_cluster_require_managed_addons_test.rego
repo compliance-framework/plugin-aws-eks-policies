@@ -2,6 +2,7 @@ package compliance_framework.eks_cluster_require_managed_addons
 
 test_skip_when_required_addons_not_configured if {
 	skip_reason == "required EKS managed add-ons are not configured"
+		with data.required_addons as []
 }
 
 test_no_violation_when_required_addons_active if {
