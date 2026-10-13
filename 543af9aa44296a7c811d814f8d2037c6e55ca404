@@ -1,0 +1,6 @@
+lisa-design:
+- Fix errors only (user decision 2026-10-13): Regal warnings (54) are left as they are.
+- unassigned-return-value: bare `object.get(x, k, false)` body expressions became `... != false`, not `== true`: a bare expression succeeds for any defined non-false value (e.g. "yes", 1, null, []), and `!= false` keeps exactly that; `== true` would not.
+- unresolved-reference: trailing line-scoped `# regal ignore:unresolved-reference` per site (data.json keys Regal can't see); no repo .regal/config.yaml, since CI would then use it instead of the shared config. The per-file explanation comment avoids the literal directive text so Regal can't read it as a directive.
+- ci.yml is the mock-plugin-policies-1 caller verbatim except push branches: [master] (default branch is master).
+- Behaviour proof: opa eval data.compliance_framework over 48 inputs x 3 data sets (repo data.json, a strict and a lax override) on master and this branch: byte-identical (value only, no location), all 33 test_* true.
