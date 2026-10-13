@@ -9,13 +9,16 @@
 
 package compliance_framework.eks_cluster_restrict_public_endpoint_cidrs
 
+# data.* keys used here come from policies/data.json, which Regal doesn't read, so their
+# references carry a line-scoped Regal ignore for the unresolved-reference rule.
+
 violation[{"id": "eks_public_endpoint_not_allowed"}] if {
 	public_endpoint_enabled
-	not data.allow_public_endpoint
+	not data.allow_public_endpoint # regal ignore:unresolved-reference
 }
 
 violation[{"id": "eks_private_endpoint_required"}] if {
-	data.require_private_endpoint_access
+	data.require_private_endpoint_access # regal ignore:unresolved-reference
 	not private_endpoint_enabled
 }
 
@@ -28,17 +31,17 @@ violation[{"cidr": cidr, "id": "eks_public_endpoint_broad_cidr"}] if {
 
 violation[{"cidr": cidr, "id": "eks_public_endpoint_unapproved_cidr"}] if {
 	public_endpoint_enabled
-	count(data.allowed_public_endpoint_cidrs) > 0
+	count(data.allowed_public_endpoint_cidrs) > 0 # regal ignore:unresolved-reference
 	public_access_cidr[cidr]
 	not explicitly_allowed_public_cidr(cidr)
 }
 
 public_endpoint_enabled if {
-	object.get(current, "endpoint_public_access", false)
+	object.get(current, "endpoint_public_access", false) != false
 }
 
 private_endpoint_enabled if {
-	object.get(current, "endpoint_private_access", false)
+	object.get(current, "endpoint_private_access", false) != false
 }
 
 public_access_cidr[cidr] if {
@@ -46,11 +49,11 @@ public_access_cidr[cidr] if {
 }
 
 broad_public_cidr(cidr) if {
-	cidr == data.broad_public_endpoint_cidrs[_]
+	cidr == data.broad_public_endpoint_cidrs[_] # regal ignore:unresolved-reference
 }
 
 explicitly_allowed_public_cidr(cidr) if {
-	cidr == data.allowed_public_endpoint_cidrs[_]
+	cidr == data.allowed_public_endpoint_cidrs[_] # regal ignore:unresolved-reference
 }
 
 current := object.get(object.get(input, "cluster_context", {}), "current", {})
@@ -60,78 +63,76 @@ description := "EKS cluster public API endpoint access should not use broad CIDR
 
 risk_templates := [
 	{
-		"name":            "EKS public endpoint not permitted",
-		"title":           "EKS cluster has a public API endpoint but public access is not permitted by policy",
-		"statement":       "The EKS API server has a public endpoint enabled, but organisational policy does not permit public endpoint access for this cluster.",
+		"name": "EKS public endpoint not permitted",
+		"title": "EKS cluster has a public API endpoint but public access is not permitted by policy",
+		"statement": "The EKS API server has a public endpoint enabled, but organisational policy does not permit public endpoint access for this cluster.",
 		"likelihood_hint": "medium",
-		"impact_hint":     "high",
-		"violation_ids":   ["eks_public_endpoint_not_allowed"],
+		"impact_hint": "high",
+		"violation_ids": ["eks_public_endpoint_not_allowed"],
 		"remediation": {
-			"title":       "Disable the EKS cluster public endpoint",
+			"title": "Disable the EKS cluster public endpoint",
 			"description": "Enable private endpoint access before disabling the public endpoint to avoid losing API server connectivity.",
 			"tasks": [
 				{"title": "Enable private endpoint access in the cluster networking configuration"},
 				{"title": "Disable public endpoint access"},
-				{"title": "Verify cluster operations continue via the private endpoint"}
-			]
-		}
+				{"title": "Verify cluster operations continue via the private endpoint"},
+			],
+		},
 	},
 	{
-		"name":            "EKS private endpoint not enabled",
-		"title":           "EKS cluster does not have private endpoint access enabled",
-		"statement":       "Policy requires private endpoint access to be enabled so that in-cluster workloads can reach the Kubernetes API server without traversing the public internet.",
+		"name": "EKS private endpoint not enabled",
+		"title": "EKS cluster does not have private endpoint access enabled",
+		"statement": "Policy requires private endpoint access to be enabled so that in-cluster workloads can reach the Kubernetes API server without traversing the public internet.",
 		"likelihood_hint": "low",
-		"impact_hint":     "high",
-		"violation_ids":   ["eks_private_endpoint_required"],
+		"impact_hint": "high",
+		"violation_ids": ["eks_private_endpoint_required"],
 		"remediation": {
-			"title":       "Enable EKS cluster private endpoint access",
+			"title": "Enable EKS cluster private endpoint access",
 			"description": "Enable private endpoint access in the cluster networking configuration.",
 			"tasks": [
 				{"title": "Enable private endpoint access in the EKS cluster networking settings"},
-				{"title": "Verify node-to-API-server connectivity via the private endpoint"}
-			]
-		}
+				{"title": "Verify node-to-API-server connectivity via the private endpoint"},
+			],
+		},
 	},
 	{
-		"name":            "EKS public endpoint uses broad CIDR",
-		"title":           "EKS cluster public endpoint is accessible from a broad CIDR range",
-		"statement":       "The EKS API server public endpoint allows access from a broad CIDR (e.g. 0.0.0.0/0), exposing it to the entire internet and increasing the risk of credential-based attacks against the Kubernetes API.",
+		"name": "EKS public endpoint uses broad CIDR",
+		"title": "EKS cluster public endpoint is accessible from a broad CIDR range",
+		"statement": "The EKS API server public endpoint allows access from a broad CIDR (e.g. 0.0.0.0/0), exposing it to the entire internet and increasing the risk of credential-based attacks against the Kubernetes API.",
 		"likelihood_hint": "high",
-		"impact_hint":     "high",
-		"violation_ids":   ["eks_public_endpoint_broad_cidr"],
-		"threat_refs": [
-			{
-				"system":      "https://cwe.mitre.org",
-				"external_id": "CWE-284",
-				"title":       "Improper Access Control",
-				"url":         "https://cwe.mitre.org/data/definitions/284.html"
-			}
-		],
+		"impact_hint": "high",
+		"violation_ids": ["eks_public_endpoint_broad_cidr"],
+		"threat_refs": [{
+			"system": "https://cwe.mitre.org",
+			"external_id": "CWE-284",
+			"title": "Improper Access Control",
+			"url": "https://cwe.mitre.org/data/definitions/284.html",
+		}],
 		"remediation": {
-			"title":       "Restrict EKS public endpoint CIDRs to known ranges",
+			"title": "Restrict EKS public endpoint CIDRs to known ranges",
 			"description": "Replace broad CIDRs with specific IP ranges covering only authorised operators and CI/CD infrastructure.",
 			"tasks": [
 				{"title": "Identify all IP ranges that legitimately need API server access"},
 				{"title": "Update allowed_public_endpoint_cidrs to the identified ranges"},
-				{"title": "Remove broad CIDRs (0.0.0.0/0, ::/0) from the public access CIDR list"}
-			]
-		}
+				{"title": "Remove broad CIDRs (0.0.0.0/0, ::/0) from the public access CIDR list"},
+			],
+		},
 	},
 	{
-		"name":            "EKS public endpoint CIDR not in approved list",
-		"title":           "EKS cluster public endpoint allows access from an unapproved CIDR",
-		"statement":       "The EKS API server public endpoint allows access from a CIDR that is not in the organisation's approved list, potentially exposing it to unauthorised networks.",
+		"name": "EKS public endpoint CIDR not in approved list",
+		"title": "EKS cluster public endpoint allows access from an unapproved CIDR",
+		"statement": "The EKS API server public endpoint allows access from a CIDR that is not in the organisation's approved list, potentially exposing it to unauthorised networks.",
 		"likelihood_hint": "medium",
-		"impact_hint":     "high",
-		"violation_ids":   ["eks_public_endpoint_unapproved_cidr"],
+		"impact_hint": "high",
+		"violation_ids": ["eks_public_endpoint_unapproved_cidr"],
 		"remediation": {
-			"title":       "Remove unapproved CIDRs from the EKS public endpoint allowlist",
+			"title": "Remove unapproved CIDRs from the EKS public endpoint allowlist",
 			"description": "Update the cluster endpoint access configuration to remove CIDRs not in the allowed_public_endpoint_cidrs policy list.",
 			"tasks": [
 				{"title": "Review the current public endpoint CIDR list"},
 				{"title": "Remove any CIDRs not present in the allowed_public_endpoint_cidrs policy"},
-				{"title": "Verify all required operators and CI/CD systems can still reach the API server"}
-			]
-		}
+				{"title": "Verify all required operators and CI/CD systems can still reach the API server"},
+			],
+		},
 	},
 ]

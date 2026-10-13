@@ -9,32 +9,35 @@
 
 package compliance_framework.eks_cluster_restrict_bootstrap_creator_admin
 
+# data.* keys used here come from policies/data.json, which Regal doesn't read, so their
+# references carry a line-scoped Regal ignore for the unresolved-reference rule.
+
 violation[{"id": "eks_bootstrap_creator_admin_enabled"}] if {
-	not data.allow_bootstrap_creator_admin
+	not data.allow_bootstrap_creator_admin # regal ignore:unresolved-reference
 	bootstrap_creator_admin_enabled
 }
 
 bootstrap_creator_admin_enabled if {
-	object.get(object.get(object.get(input, "cluster_context", {}), "current", {}), "bootstrap_creator_admin_permissions", false)
+	object.get(object.get(object.get(input, "cluster_context", {}), "current", {}), "bootstrap_creator_admin_permissions", false) != false
 }
 
 title := "EKS bootstrap cluster creator admin permissions should be disabled"
 description := "EKS bootstrap cluster creator admin permissions should be disabled unless explicitly allowed by policy."
 
 risk_templates := [{
-	"name":            "EKS bootstrap creator admin permissions enabled",
-	"title":           "EKS cluster has bootstrap creator admin permissions enabled",
-	"statement":       "Bootstrap cluster creator admin permissions are enabled, granting implicit cluster-admin access to the creator principal outside the auditable EKS access entries model.",
+	"name": "EKS bootstrap creator admin permissions enabled",
+	"title": "EKS cluster has bootstrap creator admin permissions enabled",
+	"statement": "Bootstrap cluster creator admin permissions are enabled, granting implicit cluster-admin access to the creator principal outside the auditable EKS access entries model.",
 	"likelihood_hint": "medium",
-	"impact_hint":     "high",
-	"violation_ids":   ["eks_bootstrap_creator_admin_enabled"],
+	"impact_hint": "high",
+	"violation_ids": ["eks_bootstrap_creator_admin_enabled"],
 	"remediation": {
-		"title":       "Disable bootstrap creator admin permissions and use explicit access entries",
+		"title": "Disable bootstrap creator admin permissions and use explicit access entries",
 		"description": "Create an explicit EKS access entry for the cluster creator with the required permissions, then disable the bootstrap creator admin flag. This ensures all access is managed through the auditable access entries API.",
 		"tasks": [
 			{"title": "Create an explicit EKS access entry for the current cluster creator principal"},
 			{"title": "Verify the explicit entry grants the required cluster access"},
-			{"title": "Disable bootstrap_cluster_creator_admin_permissions in the cluster configuration"}
-		]
-	}
+			{"title": "Disable bootstrap_cluster_creator_admin_permissions in the cluster configuration"},
+		],
+	},
 }]
