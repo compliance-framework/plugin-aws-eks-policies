@@ -9,6 +9,9 @@
 
 package compliance_framework.eks_cluster_require_active_health
 
+# data.* keys used here come from policies/data.json, which Regal doesn't read, so their
+# references carry a line-scoped Regal ignore for the unresolved-reference rule.
+
 violation[{"id": "eks_cluster_not_active"}] if {
 	not approved_cluster_status
 }
@@ -18,7 +21,7 @@ violation[{"id": "eks_cluster_health_issues_present"}] if {
 }
 
 approved_cluster_status if {
-	status := data.approved_cluster_statuses[_]
+	status := data.approved_cluster_statuses[_] # regal ignore:unresolved-reference
 	cluster_status == status
 }
 
@@ -31,37 +34,37 @@ description := "EKS cluster status should be ACTIVE and EKS should report no unr
 
 risk_templates := [
 	{
-		"name":            "EKS cluster is not active",
-		"title":           "EKS cluster is not in ACTIVE state",
-		"statement":       "The cluster is not reporting an ACTIVE status, which may indicate an ongoing control plane operation, provisioning failure, or degraded state affecting workload availability.",
+		"name": "EKS cluster is not active",
+		"title": "EKS cluster is not in ACTIVE state",
+		"statement": "The cluster is not reporting an ACTIVE status, which may indicate an ongoing control plane operation, provisioning failure, or degraded state affecting workload availability.",
 		"likelihood_hint": "low",
-		"impact_hint":     "high",
-		"violation_ids":   ["eks_cluster_not_active"],
+		"impact_hint": "high",
+		"violation_ids": ["eks_cluster_not_active"],
 		"remediation": {
-			"title":       "Investigate and restore cluster to ACTIVE state",
+			"title": "Investigate and restore cluster to ACTIVE state",
 			"description": "Review EKS cluster events and the AWS health dashboard to identify the cause of the non-ACTIVE state.",
 			"tasks": [
 				{"title": "Check EKS cluster status and events in the AWS console"},
 				{"title": "Review CloudTrail for recent API calls that may have changed cluster state"},
-				{"title": "Contact AWS support if the cluster is stuck in a transitional state"}
-			]
-		}
+				{"title": "Contact AWS support if the cluster is stuck in a transitional state"},
+			],
+		},
 	},
 	{
-		"name":            "EKS cluster has unresolved health issues",
-		"title":           "EKS cluster has unresolved health issues reported by AWS",
-		"statement":       "AWS has reported one or more unresolved health issues for this cluster that may affect control plane operations or workload scheduling.",
+		"name": "EKS cluster has unresolved health issues",
+		"title": "EKS cluster has unresolved health issues reported by AWS",
+		"statement": "AWS has reported one or more unresolved health issues for this cluster that may affect control plane operations or workload scheduling.",
 		"likelihood_hint": "medium",
-		"impact_hint":     "high",
-		"violation_ids":   ["eks_cluster_health_issues_present"],
+		"impact_hint": "high",
+		"violation_ids": ["eks_cluster_health_issues_present"],
 		"remediation": {
-			"title":       "Resolve EKS cluster health issues",
+			"title": "Resolve EKS cluster health issues",
 			"description": "Review the EKS cluster health dashboard for specific issue codes and follow AWS remediation guidance for each issue type.",
 			"tasks": [
 				{"title": "Review cluster health issues via the EKS console or AWS CLI"},
 				{"title": "Address the root cause of each reported health issue"},
-				{"title": "Verify health issue count returns to zero after remediation"}
-			]
-		}
+				{"title": "Verify health issue count returns to zero after remediation"},
+			],
+		},
 	},
 ]

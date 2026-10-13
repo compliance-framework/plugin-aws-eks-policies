@@ -9,13 +9,16 @@
 
 package compliance_framework.eks_cluster_require_control_plane_audit_logging
 
+# data.* keys used here come from policies/data.json, which Regal doesn't read, so their
+# references carry a line-scoped Regal ignore for the unresolved-reference rule.
+
 violation[{"id": "eks_control_plane_log_type_missing", "log_type": log_type}] if {
 	required_log_type[log_type]
 	not enabled_log_type[log_type]
 }
 
 required_log_type[log_type] if {
-	log_type := data.required_control_plane_log_types[_]
+	log_type := data.required_control_plane_log_types[_] # regal ignore:unresolved-reference
 }
 
 enabled_log_type[log_type] if {
@@ -23,26 +26,26 @@ enabled_log_type[log_type] if {
 }
 
 skip_reason := "required EKS control plane log types are not configured" if {
-	count(data.required_control_plane_log_types) == 0
+	count(data.required_control_plane_log_types) == 0 # regal ignore:unresolved-reference
 }
 
 title := "EKS cluster should enable required control plane logs"
-description := sprintf("EKS control plane logging should include required log types: %s", [concat(", ", data.required_control_plane_log_types)])
+description := sprintf("EKS control plane logging should include required log types: %s", [concat(", ", data.required_control_plane_log_types)]) # regal ignore:unresolved-reference
 
 risk_templates := [{
-	"name":            "EKS control plane log type is disabled",
-	"title":           "Required EKS control plane log type is not enabled",
-	"statement":       "One or more required EKS control plane log types are not enabled, reducing visibility into API server events, authentication activity, and cluster operations.",
+	"name": "EKS control plane log type is disabled",
+	"title": "Required EKS control plane log type is not enabled",
+	"statement": "One or more required EKS control plane log types are not enabled, reducing visibility into API server events, authentication activity, and cluster operations.",
 	"likelihood_hint": "medium",
-	"impact_hint":     "high",
-	"violation_ids":   ["eks_control_plane_log_type_missing"],
+	"impact_hint": "high",
+	"violation_ids": ["eks_control_plane_log_type_missing"],
 	"remediation": {
-		"title":       "Enable all required control plane log types",
+		"title": "Enable all required control plane log types",
 		"description": "Enable the missing log types in the EKS cluster logging configuration. Logs are streamed to CloudWatch Logs at no EKS charge (CloudWatch ingestion costs apply).",
 		"tasks": [
 			{"title": "Identify missing log types from the violation details"},
 			{"title": "Enable the missing log types via the EKS console or AWS CLI"},
-			{"title": "Verify logs are appearing in the associated CloudWatch log group"}
-		]
-	}
+			{"title": "Verify logs are appearing in the associated CloudWatch log group"},
+		],
+	},
 }]
