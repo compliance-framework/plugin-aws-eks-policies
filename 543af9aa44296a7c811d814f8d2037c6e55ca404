@@ -4,3 +4,6 @@ lisa-design:
 - unresolved-reference: trailing line-scoped `# regal ignore:unresolved-reference` per site (data.json keys Regal can't see); no repo .regal/config.yaml, since CI would then use it instead of the shared config. The per-file explanation comment avoids the literal directive text so Regal can't read it as a directive.
 - ci.yml is the mock-plugin-policies-1 caller verbatim except push branches: [master] (default branch is master).
 - Behaviour proof: opa eval data.compliance_framework over 48 inputs x 3 data sets (repo data.json, a strict and a lax override) on master and this branch: byte-identical (value only, no location), all 33 test_* true.
+
+lisa-selfreview:
+- pass 1 (core, rego-policy rules): approve, no findings on the diff. Pre-existing items (README Testing section runs non-strict opa check; Makefile validate same; detached METADATA blank line; README input schema lists input.cluster which no policy reads) are out of scope and listed in the PR body.
