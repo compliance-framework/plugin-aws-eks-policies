@@ -1,0 +1,2 @@
+lisa-design:
+W3-S2-T02 decisions: manifest seeded at 0.1.0 because releases/latest is v0.1.0 (final, vX.Y.Z) and its commit b354a34 is an ancestor of master, so no bootstrap-sha. No version.txt added (release-please adds it in the first release PR). Default branch stays master: push triggers use [master]. Callers are copied from mock-plugin-policies-1 with pins at v1.5.2 and are identical to the merged plugin-local-ssh-policies#14. README untouched: it describes local bundling only, not releasing.
